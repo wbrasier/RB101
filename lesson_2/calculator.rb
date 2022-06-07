@@ -3,76 +3,79 @@
 # performs the operation on the two numbers
 # output the result
 
+=begin
 def prompt(message)
   Kernel.puts "=> #{message}"
 end
+=end
+require 'yaml'
 
-def valid_number?(num)
-  num.to_i != 0
+conf = YAML.load_file("config.calculator.yml")
+
+
+def number?(num)
+    if num.include?('.')
+      num.to_f.to_s == num
+    else 
+      num.to_i.to_s == num 
+    end
 end
 
 def operation_to_message(op)
-  case op
-  when '1'
-    'Adding'
-  when '2'
-    'Subtracting'
-  when '3'
-    'Multiplying'
-  when '4'
-    'Dividing'
-  end
+  conf = YAML.load_file("config.calculator.yml")
+  operator_string = case op
+                    when '1'
+                      conf.fetch(:adding)
+                    when '2'
+                      conf.fetch(:subtracting)
+                    when '3'
+                      conf.fetch(:multiplying)
+                    when '4'
+                      conf.fetch(:dividing)
+                    end
+  operator_string 
 end
-# case statement is the last evaluated expression, so it is returned
-
-prompt("Welcome to Calculator! Enter your name:")
 
 name = ''
 loop do
+  puts conf.fetch(:welcome)
   name = Kernel.gets.chomp
 
   if name.empty?
-    prompt "Make sure to use a valid name."
+    puts conf.fetch(:valid_name)
   else
     break
   end
 end
 
-prompt "Hi #{name}!"
+puts conf.fetch(:hi) + " #{name}!"
 
 loop do
   number1 = nil
   loop do
-    prompt "What's the first number?"
+    puts conf.fetch(:retrieve_num_1)
     number1 = Kernel.gets.chomp
 
-    if valid_number? number1
+    if number? number1
       break
     else
-      prompt "Hmm... that doesn't look like a valid number"
+      puts conf.fetch(:invalid_num)
     end
   end
 
   number2 = nil
   loop do
-    prompt "What's the second number?"
+    puts conf.fetch(:retrieve_num_2)
     number2 = Kernel.gets.chomp
 
-    if valid_number? number2
+    if number? number2
       break
     else
-      prompt "Hmm... that doesn't look like a valid number"
+      puts conf.fetch(:invalid_num)
     end
   end
 
-  operator_prompt = <<-MSG
-    What operation would you like to perform?
-    1) add
-    2) subtract
-    3) multiply
-    4) divide
-  MSG
-  prompt(operator_prompt)
+puts conf.fetch(:operator_prompt)
 
   operator = ''
   loop do
@@ -81,11 +84,11 @@ loop do
     if %w(1 2 3 4).include? operator
       break
     else
-      prompt "Must choose 1, 2, 3, or 4"
+      puts conf.fetch(:must_choose)
     end
   end
 
-  prompt "#{operation_to_message(operator)} the two numbers..."
+  puts "#{operation_to_message(operator)} " + conf.fetch(:numbers_action)
   result =  case operator
             when '1'
               number1.to_i + number2.to_i
@@ -94,12 +97,16 @@ loop do
             when '3'
               number1.to_i * number2.to_i
             when '4'
-              number1.to_f / number2.to_f
+              if number2.to_i == 0
+                puts conf.fetch(:no_zero)
+              else
+                number1.to_f / number2.to_f
+              end
             end
-  prompt "The result is #{result}"
-  prompt "Do you want to perform another operation?(Y to calculate again)"
+  puts conf.fetch(:result) + " #{result}" unless operator == '4'
+  puts conf.fetch(:another)
   answer = Kernel.gets.chomp
   break unless answer.downcase.start_with? 'y'
 end
 
-prompt "Thank you for using the calculator! Good bye!"
+puts conf.fetch(:goodbye)

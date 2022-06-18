@@ -7,7 +7,7 @@ loop do
     print "loan amount: "
     loan_total = gets.chomp.to_f
 
-    if loan_total.to_f <= 0
+    if loan_total <= 0
       puts "You must enter a positive number."
     else
       break

@@ -1,10 +1,6 @@
+#also possible to simply do int.times { puts phrase }
 def repeat(phrase, int)
-  counter = 0
-  loop do
-    puts phrase
-    counter += 1
-    break if counter == int
-  end
+  int.times { puts phrase}
 end
 
 def prompt(text)

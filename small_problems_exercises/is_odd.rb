@@ -1,5 +1,12 @@
+#added the further exploration so that it doesn't matter if it is modulo or remainder
+
 def is_odd?(int)
- int % 2 == 1
+  if  int == '0' || int == '2' || int == '4' ||
+    int == '6' || int == '8'
+    false
+  else
+    true
+  end
 end
 
 def prompt(string)
@@ -19,9 +26,11 @@ loop do
   prompt('You must input an integer!')
 end
 
-prompt(is_odd?(num.to_i))
+num_array = num.to_s.split('')
+integer = num_array.pop
+prompt(is_odd?(integer))
 
-if is_odd?(num.to_i)
+if is_odd?(integer)
   prompt("#{num} is odd!")
 else
   prompt("#{num} is even!")

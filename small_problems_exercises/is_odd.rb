@@ -1,9 +1,5 @@
 def is_odd?(int)
-  if (int % 2).zero?
-    false
-  else
-    true
-  end
+ int % 2 == 1
 end
 
 def prompt(string)

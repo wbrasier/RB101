@@ -2,7 +2,7 @@
 
 def is_odd?(int)
   if  int == '0' || int == '2' || int == '4' ||
-    int == '6' || int == '8'
+      int == '6' || int == '8'
     false
   else
     true

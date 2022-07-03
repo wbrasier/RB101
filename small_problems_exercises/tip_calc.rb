@@ -5,10 +5,8 @@ print 'What is the tip percentage? '
 tip_percent = gets.chomp.to_f
 
 tip = (bill_no_tip * tip_percent / 100)
-tip = tip.to_f.round(2)
 
 total_bill = (tip + bill_no_tip)
-total_bill = total_bill.round(2)
 
-puts "The tip is $#{tip}"
-puts "The total is $#{total_bill}"
+puts "The tip is $#{format("%0.2f", tip).chomp}"
+puts "The total is $#{format("%0.2f", total_bill).chomp}"

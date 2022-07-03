@@ -1,13 +1,16 @@
-SQMETERS_TO_SQFEET = 10.7639
+SQFEET_TO_SQINCHES = 144
+SQFEET_TO_SQCM = 929.03
 
-print "Enter the length of the room in meters:"
+print 'Enter the length of the room in feet:'
 length = gets.chomp.to_f
 
-print "Enter the width of the room in meters:"
+print 'Enter the width of the room in feet:'
 width = gets.chomp.to_f
 
-area_m = length * width
+area_f = length * width
 
-area_f = area_m * SQMETERS_TO_SQFEET
+area_i = area_f * SQFEET_TO_SQINCHES
+area_cm = area_f * SQFEET_TO_SQCM
 
-puts "The area of the room is #{area_m.round} square meters (#{area_f.round} square feet)."
+puts "The area of the room is #{area_f.round} square feet (#{area_i.round} 
+      square inches, #{area_cm.round} square cm)."

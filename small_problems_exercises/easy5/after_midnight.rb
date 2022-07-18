@@ -1,0 +1,13 @@
+def time_of_day(total_minutes)
+  minutes = total_minutes % 60
+  hours = (total_minutes / 60) % 24
+  "#{format("%0.2d", hours)}:#{format("%0.2d", minutes)}"
+end
+
+puts time_of_day(0) == "00:00"
+puts time_of_day(-3) == "23:57"
+puts time_of_day(35) == "00:35"
+puts time_of_day(-1437) == "00:03"
+puts time_of_day(3000) == "02:00"
+puts time_of_day(800) == "13:20"
+puts time_of_day(-4231) == "01:29"

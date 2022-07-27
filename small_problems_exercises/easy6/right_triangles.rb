@@ -47,5 +47,4 @@ def upside_down_left_triangle(int)
   triangle_rows.reverse
 end
 
-puts upside_down_left_triangle(5)
-puts upside_down_left_triangle(9)
+puts upside_down_triangle(11)

@@ -13,7 +13,7 @@ end
 
 # rubocop:disable Metrics/AbcSize
 def display_board(brd)
-  # system 'clear'
+  system 'clear'
   puts "You're a #{PLAYER_MARKER}. Computer is a #{COMPUTER_MARKER}."
   puts ""
   puts "     |     |"
@@ -91,7 +91,19 @@ def find_high_reward_square(brd)
       false
   end
 end
-  
+
+def place_piece!(brd, player)
+  if player == 'Computer'
+    computer_places_piece!(brd)
+  else
+    player_places_piece!(brd)
+  end
+end
+
+def alternate_player(just_played)
+  return 'Player' if just_played == 'Computer'
+  return 'Computer'
+end
 
 def board_full?(brd)
   empty_squares(brd).empty?
@@ -126,7 +138,8 @@ end
 def immediate_threat_or_win?(brd)
   WINNING_LINES.each do |line|
     [COMPUTER_MARKER, PLAYER_MARKER].each do |marker|
-      if (brd.values_at(*line).count(marker) == 2 && brd.values_at(*line).count(' ') == 1)
+      if ((brd.values_at(*line).count(marker) == 2 && 
+      brd.values_at(*line).count(' ') == 1))
         return true
       end
     end
@@ -141,7 +154,7 @@ end
 
 
 loop do # outer loop
-  first_player = ''
+  current_player = ''
   
   computer_wins = 0
   player_wins = 0
@@ -155,14 +168,13 @@ loop do # outer loop
       prompt "C for computer P for player, or R for random."
       answer = gets.chomp.upcase
       if answer.include?('C')
-        first_player = 'Computer'
+        current_player = 'Computer'
         break
       elsif answer.include?('P')
-        first_player = 'Player'
+        current_player = 'Player'
         break
       elsif answer.include?('R')
-        first_player = ['Computer', 'Player'].sample
-        p first_player
+        current_player = ['Computer', 'Player'].sample
         break
       else
         prompt "Not a valid input. C for computer or P for player."
@@ -171,26 +183,16 @@ loop do # outer loop
     
     loop do # each individual play loop
 
-      display_board(board)
-
-      prompt "Computer wins: #{computer_wins}"
-      prompt "Player wins: #{player_wins}"
-
-      if first_player == 'Player'
-        player_places_piece!(board)
-        break if someone_won?(board) || board_full?(board)
-  
-        computer_places_piece!(board)
-        break if someone_won?(board) || board_full?(board)
-      else
-        computer_places_piece!(board)
-        break if someone_won?(board) || board_full?(board)
-        
+      loop do
         display_board(board)
-        
-        player_places_piece!(board)
+        prompt "Computer wins: #{computer_wins}"
+      prompt "Player wins: #{player_wins}"
+        place_piece!(board, current_player)
+        current_player = alternate_player(current_player)
         break if someone_won?(board) || board_full?(board)
       end
+
+      break
     end
 
     display_board(board)

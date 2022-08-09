@@ -64,10 +64,10 @@ def player_hit_or_stay
   loop do
     prompt "Would you like to hit or stay? H for hit or S for stay."
     answer = gets.chomp
-    if answer.downcase.include?('h')
+    if answer.downcase.start_with?('h')
       system 'clear'
       return 'hit'
-    elsif answer.downcase.include?('s')
+    elsif answer.downcase.start_with?('s')
       system 'clear'
       return 'stay'
     else

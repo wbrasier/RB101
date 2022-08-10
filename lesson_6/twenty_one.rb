@@ -1,3 +1,6 @@
+GAME_NUMBER = 21
+DEALER_HITS_UNTIL = GAME_NUMBER - 4
+
 def prompt(msg)
   puts "=> #{msg}"
 end
@@ -32,6 +35,7 @@ def deal_cards!(dck, crds, card_amount = 2)
   crds
 end
 
+# displays the appropriate amount of cards for each round
 def display_cards(crds, card_owner, amount_displayed)
   card_keys = crds.map(&:keys).flatten
   string = "#{card_owner}: "
@@ -46,7 +50,7 @@ def display_cards(crds, card_owner, amount_displayed)
   prompt string
 end
 
-# calculates tha value of all the cards
+# calculates the value of all the cards
 def calculate_total(crds)
   values = crds.map(&:values).flatten
   values.map! do |value|
@@ -54,8 +58,9 @@ def calculate_total(crds)
   end
   sum = values.sum
 
+  # correcting for the aces
   values.select { |value| value == 11 }.count.times do
-    sum -= 10 if sum > 21
+    sum -= 10 if sum > GAME_NUMBER
   end
   sum
 end
@@ -77,10 +82,10 @@ def player_hit_or_stay
 end
 
 def dealer_hit_or_stay(dealer)
-  if dealer < 17
+  if dealer < DEALER_HITS_UNTIL
     prompt "Dealer hits!"
     'hit'
-  elsif dealer > 21
+  elsif dealer > GAME_NUMBER
     prompt "Dealer BUSTS!"
     'bust'
   else
@@ -94,12 +99,27 @@ def calculate_winner(player, dealer)
     if player == dealer
       'tie'
     elsif player < dealer
-      dealer > 21 ? 'player' : 'dealer'
+      dealer > GAME_NUMBER ? 'player' : 'dealer'
     else
-      player > 21 ? 'dealer' : 'player'
+      player > GAME_NUMBER ? 'dealer' : 'player'
     end
   winner
 end
+
+def play_again?
+  puts "---------------------------------"
+  prompt "Good game! Would you like to play again?"
+  answer = ''
+  loop do
+    prompt "Y for yes, N for no."
+    answer = gets.chomp.upcase
+    return true if answer.start_with?('Y')
+    answer.start_with?('N') ? (return false) : (prompt "Sorry invalid input")
+  end
+end
+
+player_points = 0
+computer_points = 0
 
 # loop for the individual rounds
 loop do
@@ -112,11 +132,13 @@ loop do
   deal_cards!(deck, player_cards)
   deal_cards!(deck, dealer_cards)
 
-  # displays dealer cards
+  prompt "The first to 5 total wins is the ultimate winner!"
+
+  # displays dealer cards and calculates total
   display_cards(dealer_cards, 'Dealer has', 1)
   dealer_total = calculate_total(dealer_cards)
 
-  # displays player cards
+  # displays player cards and calculates total
   display_cards(player_cards, 'You have', player_cards.count)
   player_total = calculate_total(player_cards)
 
@@ -129,8 +151,9 @@ loop do
       deal_cards!(deck, player_cards, 1)
       display_cards(player_cards, 'You have', player_cards.count)
       player_total = calculate_total(player_cards)
+      prompt "Your total is #{player_total}"
 
-      if player_total > 21
+      if player_total > GAME_NUMBER
         prompt "You BUST!"
         break
       end
@@ -143,7 +166,9 @@ loop do
   end
 
   loop do
-    break if player_total > 21
+    # if the player busts the dealer won't do any moves
+    break if player_total > GAME_NUMBER
+
     dealer_move = dealer_hit_or_stay(dealer_total)
     if dealer_move == 'hit'
       deal_cards!(deck, dealer_cards, 1)
@@ -153,6 +178,7 @@ loop do
     end
   end
 
+  puts "---------------------------------"
   prompt "Your total is #{player_total}"
   display_cards(dealer_cards, 'Dealer has', dealer_cards.count)
   prompt "Dealer's total is #{dealer_total}"
@@ -160,22 +186,29 @@ loop do
 
   if winner == 'player'
     prompt "You win! Congrats!"
+    player_points += 1
   elsif winner == 'dealer'
     prompt "You lose :("
+    computer_points += 1
   else
     prompt "Tie!"
   end
 
-  prompt "Good game! Would you like to play again?"
-  # validating play again input
-  answer = ''
-  loop do
-    prompt "Y for yes, N for no."
-    answer = gets.chomp.upcase
-    break if answer.start_with?('N') || answer.start_with?('Y')
-    prompt "Sorry invalid input."
-  end
+  puts "---------------------------------"
+  prompt "Your total amount of wins is #{player_points}."
+  prompt "The computer's total amount of wins is #{computer_points}."
+  prompt "The first to 5 total wins is the ultimate winner!"
+  break if player_points >= 5 || computer_points >= 5
 
-  break if answer.start_with?('N')
+  break if !play_again?
 end
+
+if player_points >= 5
+  ultimate_winner = 'you'
+elsif computer_points >= 5
+  ultimate_winner = 'computer'
+end
+
+prompt "The ultimate winner is #{ultimate_winner}!" if ultimate_winner
+
 prompt "Thanks for playing!"

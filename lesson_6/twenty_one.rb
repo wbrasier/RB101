@@ -68,11 +68,11 @@ end
 def player_hit_or_stay
   loop do
     prompt "Would you like to hit or stay? H for hit or S for stay."
-    answer = gets.chomp
-    if answer.downcase.start_with?('h')
+    answer = gets.chomp.downcase
+    if answer == 'h' || answer == 'hit'
       system 'clear'
       return 'hit'
-    elsif answer.downcase.start_with?('s')
+    elsif answer == 's' || answer == 'stay'
       system 'clear'
       return 'stay'
     else
@@ -123,6 +123,7 @@ end
 
 player_points = 0
 computer_points = 0
+games_played = 0
 
 # loop for the individual rounds
 loop do
@@ -135,8 +136,38 @@ loop do
   deal_cards!(deck, player_cards)
   deal_cards!(deck, dealer_cards)
 
-  prompt "The first to 5 total wins is the ultimate winner!"
-  sleep 2
+  # shows the player game rules and instructions
+  if games_played == 0
+    output = <<-MSG
+=> Welcome to Twenty One!
+=> The goal of the game is to get as close as possible to #{GAME_NUMBER}
+without exceeding it.
+    MSG
+    puts output
+    sleep 4
+    output = <<-MSG
+=> The dealer will hit (draw a card) until #{DEALER_HITS_UNTIL} points.
+    MSG
+    puts output
+    sleep 4
+    output = <<-MSG
+=> You can hit (draw a card) or stay (end your turn & not draw) as many
+times as you like, but if you exceed #{GAME_NUMBER} you bust and you
+lose!
+    MSG
+    puts output
+    sleep 5
+    output = <<-MSG
+=> Aces will be worth 1 or 11 points based on how many points are already
+in the hand. Aces will be worth 11 points until the hand exceeds 21 points,
+then the Ace will be worth 1 point.
+    MSG
+    puts output
+    sleep 6
+    prompt "The first to 5 total wins is the ultimate winner!"
+    sleep 6
+    puts "---------------------------------"
+  end
 
   # displays dealer cards and calculates total
   display_cards(dealer_cards, 'Dealer has', 1)
@@ -207,6 +238,7 @@ loop do
   prompt "The first to 5 total wins is the ultimate winner!"
   break if player_points >= 5 || computer_points >= 5
 
+  games_played += 1
   break if !play_again?
 end
 

@@ -84,12 +84,15 @@ end
 def dealer_hit_or_stay(dealer)
   if dealer < DEALER_HITS_UNTIL
     prompt "Dealer hits!"
+    sleep 2
     'hit'
   elsif dealer > GAME_NUMBER
     prompt "Dealer BUSTS!"
+    sleep 2
     'bust'
   else
     prompt "Dealer stays!"
+    sleep 2
     'stay'
   end
 end
@@ -133,6 +136,7 @@ loop do
   deal_cards!(deck, dealer_cards)
 
   prompt "The first to 5 total wins is the ultimate winner!"
+  sleep 2
 
   # displays dealer cards and calculates total
   display_cards(dealer_cards, 'Dealer has', 1)
@@ -141,6 +145,7 @@ loop do
   # displays player cards and calculates total
   display_cards(player_cards, 'You have', player_cards.count)
   player_total = calculate_total(player_cards)
+  prompt "Your total is #{player_total}"
 
   # player hits or stays
   loop do
@@ -148,6 +153,7 @@ loop do
 
     if player_move == 'hit'
       prompt "You hit! Time to get another card!"
+      sleep 2
       deal_cards!(deck, player_cards, 1)
       display_cards(player_cards, 'You have', player_cards.count)
       player_total = calculate_total(player_cards)
@@ -194,6 +200,7 @@ loop do
     prompt "Tie!"
   end
 
+  sleep 4
   puts "---------------------------------"
   prompt "Your total amount of wins is #{player_points}."
   prompt "The computer's total amount of wins is #{computer_points}."

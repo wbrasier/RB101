@@ -1,3 +1,4 @@
+require 'yaml'
 GAME_NUMBER = 21
 DEALER_HITS_UNTIL = GAME_NUMBER - 4
 
@@ -74,6 +75,7 @@ def player_hit_or_stay
       return 'hit'
     elsif answer == 's' || answer == 'stay'
       system 'clear'
+      prompt "Time for the dealer to hit or stay!"
       return 'stay'
     else
       prompt "Sorry, that is not a valid option. H for hit or S for stay."
@@ -81,12 +83,26 @@ def player_hit_or_stay
   end
 end
 
+def player_hit_new_total(dck, player_crds)
+  prompt "You hit! Time to get another card!"
+  sleep 2
+  deal_cards!(dck, player_crds, 1)
+  display_cards(player_crds, 'You have', player_crds.count)
+  player_total = calculate_total(player_crds)
+  prompt "Your total is #{player_total}"
+  player_total
+end
+
+def bust?(points)
+  points > GAME_NUMBER
+end
+
 def dealer_hit_or_stay(dealer)
   if dealer < DEALER_HITS_UNTIL
     prompt "Dealer hits!"
     sleep 2
     'hit'
-  elsif dealer > GAME_NUMBER
+  elsif bust?(dealer)
     prompt "Dealer BUSTS!"
     sleep 2
     'bust'
@@ -97,33 +113,97 @@ def dealer_hit_or_stay(dealer)
   end
 end
 
+def display_totals(player_pts, dealer_crds, dealer_pts)
+  puts "---------------------------------"
+  prompt "Your total is #{player_pts}"
+  display_cards(dealer_crds, 'Dealer has', dealer_crds.count)
+  prompt "Dealer's total is #{dealer_pts}"
+  winner = calculate_winner(player_pts, dealer_pts)
+  display_winner(winner)
+end
+
 def calculate_winner(player, dealer)
-  winner =
-    if player == dealer
-      'tie'
-    elsif player < dealer
-      dealer > GAME_NUMBER ? 'player' : 'dealer'
-    else
-      player > GAME_NUMBER ? 'dealer' : 'player'
-    end
-  winner
+  if player == dealer
+    'tie'
+  elsif player < dealer
+    dealer > GAME_NUMBER ? 'player' : 'dealer'
+  else
+    player > GAME_NUMBER ? 'dealer' : 'player'
+  end
+end
+
+def display_winner(winner)
+  if winner == 'player'
+    prompt "You win! Congrats!"
+  elsif winner == 'dealer'
+    prompt "You lose :("
+  else
+    prompt "Tie!"
+  end
+end
+
+def update_winner_totals!(player_pts, dealer_pts, scores)
+  winner = calculate_winner(player_pts, dealer_pts)
+  if winner == 'player'
+    scores['player_points'] += 1
+  elsif winner == 'dealer'
+    scores['computer_points'] += 1
+  end
+end
+
+def display_ultimate_winner(scores)
+  if scores['player_points'] >= 5
+    ultimate_winner = 'you'
+  elsif scores['computer_points'] >= 5
+    ultimate_winner = 'computer'
+  end
+  prompt "The ultimate winner is #{ultimate_winner}!" if ultimate_winner
 end
 
 def play_again?
   puts "---------------------------------"
   prompt "Good game! Would you like to play again?"
+  yes_or_no_validate
+end
+
+def yes_or_no_validate
   answer = ''
   loop do
-    prompt "Y for yes, N for no."
-    answer = gets.chomp.upcase
-    return true if answer.start_with?('Y')
-    answer.start_with?('N') ? (return false) : (prompt "Sorry invalid input")
+    prompt "Type y for yes or n for no."
+    answer = gets.chomp.downcase
+    if answer == 'y' || answer == 'yes'
+      return true
+    elsif answer == 'n' || answer == 'no'
+      return false
+    else
+      prompt "Invalid answer, put y for yes or n for no."
+    end
   end
 end
 
-player_points = 0
-computer_points = 0
-games_played = 0
+def game_instructions
+  message = YAML.safe_load(File.read("twenty_one_game_instructions.yml"))
+  message.each do |line|
+    prompt line
+    gets.chomp
+  end
+  puts "---------------------------------"
+  prompt "Press Enter when you are ready to play!"
+  answer = gets.chomp
+  system 'clear' if answer
+end
+
+def display_ultimate_winner_scores(scores)
+  sleep 4
+  puts "---------------------------------"
+  prompt "Your total amount of wins is #{scores['player_points']}."
+  prompt "The computer's total amount of wins is #{scores['computer_points']}."
+  prompt "The first to 5 total wins is the ultimate winner!"
+end
+
+game_play_info = { 'player_points' => 0,
+                   'computer_points' => 0,
+                   'games_played' => 0 }
 
 # loop for the individual rounds
 loop do
@@ -136,37 +216,11 @@ loop do
   deal_cards!(deck, player_cards)
   deal_cards!(deck, dealer_cards)
 
-  # shows the player game rules and instructions
-  if games_played == 0
-    output = <<-MSG
-=> Welcome to Twenty One!
-=> The goal of the game is to get as close as possible to #{GAME_NUMBER}
-without exceeding it.
-    MSG
-    puts output
-    sleep 4
-    output = <<-MSG
-=> The dealer will hit (draw a card) until #{DEALER_HITS_UNTIL} points.
-    MSG
-    puts output
-    sleep 4
-    output = <<-MSG
-=> You can hit (draw a card) or stay (end your turn & not draw) as many
-times as you like, but if you exceed #{GAME_NUMBER} you bust and you
-lose!
-    MSG
-    puts output
-    sleep 5
-    output = <<-MSG
-=> Aces will be worth 1 or 11 points based on how many points are already
-in the hand. Aces will be worth 11 points until the hand exceeds 21 points,
-then the Ace will be worth 1 point.
-    MSG
-    puts output
-    sleep 6
-    prompt "The first to 5 total wins is the ultimate winner!"
-    sleep 6
+  # shows the player game rules and instructions if they want
+  if game_play_info['games_played'] == 0
     puts "---------------------------------"
+    prompt "Would you like to see the game rules and instructions?"
+    game_instructions if yes_or_no_validate
   end
 
   # displays dealer cards and calculates total
@@ -180,34 +234,22 @@ then the Ace will be worth 1 point.
 
   # player hits or stays
   loop do
-    player_move = player_hit_or_stay
-
-    if player_move == 'hit'
-      prompt "You hit! Time to get another card!"
-      sleep 2
-      deal_cards!(deck, player_cards, 1)
-      display_cards(player_cards, 'You have', player_cards.count)
-      player_total = calculate_total(player_cards)
-      prompt "Your total is #{player_total}"
-
-      if player_total > GAME_NUMBER
-        prompt "You BUST!"
+    if player_hit_or_stay == 'hit'
+      player_total = player_hit_new_total(deck, player_cards)
+      if bust?(player_total)
+        prompt 'You BUST!'
         break
       end
-    elsif player_move == 'stay'
-      prompt "Time for the dealer to hit or stay!"
-      break
     else
-      prompt 'Sorry not a valid input. H for hit or S for stay.'
+      break
     end
   end
 
   loop do
     # if the player busts the dealer won't do any moves
-    break if player_total > GAME_NUMBER
+    break if bust?(player_total)
 
-    dealer_move = dealer_hit_or_stay(dealer_total)
-    if dealer_move == 'hit'
+    if dealer_hit_or_stay(dealer_total) == 'hit'
       deal_cards!(deck, dealer_cards, 1)
       dealer_total = calculate_total(dealer_cards)
     else
@@ -215,39 +257,18 @@ then the Ace will be worth 1 point.
     end
   end
 
-  puts "---------------------------------"
-  prompt "Your total is #{player_total}"
-  display_cards(dealer_cards, 'Dealer has', dealer_cards.count)
-  prompt "Dealer's total is #{dealer_total}"
-  winner = calculate_winner(player_total, dealer_total)
+  display_totals(player_total, dealer_cards, dealer_total)
+  update_winner_totals!(player_total, dealer_total, game_play_info)
 
-  if winner == 'player'
-    prompt "You win! Congrats!"
-    player_points += 1
-  elsif winner == 'dealer'
-    prompt "You lose :("
-    computer_points += 1
-  else
-    prompt "Tie!"
-  end
+  display_ultimate_winner_scores(game_play_info)
 
-  sleep 4
-  puts "---------------------------------"
-  prompt "Your total amount of wins is #{player_points}."
-  prompt "The computer's total amount of wins is #{computer_points}."
-  prompt "The first to 5 total wins is the ultimate winner!"
-  break if player_points >= 5 || computer_points >= 5
+  break if game_play_info['player_points'] >= 5 ||
+           game_play_info['computer_points'] >= 5
 
-  games_played += 1
+  game_play_info['games_played'] += 1
   break if !play_again?
 end
 
-if player_points >= 5
-  ultimate_winner = 'you'
-elsif computer_points >= 5
-  ultimate_winner = 'computer'
-end
-
-prompt "The ultimate winner is #{ultimate_winner}!" if ultimate_winner
+display_ultimate_winner(game_play_info)
 
 prompt "Thanks for playing!"
